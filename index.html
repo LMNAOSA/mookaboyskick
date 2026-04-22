@@ -519,10 +519,25 @@
     .capsule-step { border-right:none; border-bottom:1px solid var(--dust); }
     .capsule-step:last-child { border-bottom:none; }
     .tiers-grid { grid-template-columns:1fr 1fr; }
-    .tier { border-bottom:1px solid var(--dust); }
+    .tier { border-bottom:1px solid var(--dust);
+  }
+    .tier {
+  border-bottom: 1px solid var(--dust);
+}
+
+.tier:nth-child(3),
+.tier:nth-child(4) {
+  border-bottom: none;
+}
     .tier.top { margin:0; }
     .hero-field-note-container { position: relative; bottom: 0; right: 0; margin-top: 2rem; padding: 0 6vw; }
   }
+ 
+  @media (max-width:1000px) {
+  .tiers-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
  
   @media (max-width:580px) {
     .tiers-grid { grid-template-columns:1fr; }
