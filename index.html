@@ -642,7 +642,7 @@
     <!-- BOYS SPEAK — Caveat throughout -->
     <div class="voice-block">
       <p>We've given up a lot to keep doing this. Comfort, certainty, the kind of life most people take for granted.</p>
-      <p>We've been below sea level so long all we see is level.</p>      
+      <p>We've been below sea level so long, all we see is level.</p>      
       <p>It's simple. We go underground to keep our family above it.</p>
       <p>What we need right now though, is people who want to be part of something.</p>
       <p>We need people who want to break new ground.</p>
@@ -838,136 +838,6 @@
   <span>© 2025 Mooka Boys &nbsp;·&nbsp; Andamooka, South Australia</span>
   <span>30°26′S &nbsp;137°09′E</span>
 </footer>
- 
- 
-<!-- ═══ INLAND SEA — scroll-driven water veins ═══ -->
-<script>
-(function() {
-  const canvas = document.getElementById('seaCanvas');
-  const ctx = canvas.getContext('2d');
- 
-  let W, H, scrollY = 0, pageH = 1;
-  let veins = [];
-  let tick = 0;
- 
-  function resize() {
-    W = canvas.width  = window.innerWidth;
-    H = canvas.height = window.innerHeight;
-    pageH = Math.max(document.body.scrollHeight, 1);
-  }
- 
-  function makeVein(x, startProgress, speed, width, hue) {
-    return {
-      x,
-      y: -20,
-      cx: x,
-      dx: (Math.random() - 0.5) * 0.8,
-      speed,
-      width,
-      alpha: 0,
-      maxAlpha: 0.18 + Math.random() * 0.22,
-      hue,
-      alive: true,
-      age: 0,
-      maxAge: 180 + Math.random() * 220,
-      segments: [],
-      branches: [],
-      branchCooldown: 60 + Math.random() * 80,
-      born: performance.now(),
-    };
-  }
- 
-  function spawnVein() {
-    const x = W * (0.05 + Math.random() * 0.9);
-    veins.push(makeVein(x, 0, 1.2 + Math.random() * 2.2, 0.8 + Math.random() * 1.6, 210 + Math.random() * 20));
-  }
- 
-  function init() {
-    veins = [];
-    for (let i = 0; i < 7; i++) spawnVein();
-  }
- 
-  function update() {
-    tick++;
-    if (tick % 90 === 0 && veins.length < 18) spawnVein();
- 
-    veins.forEach(v => {
-      if (!v.alive) return;
-      v.age++;
-      v.dx += (Math.random() - 0.5) * 0.18;
-      v.dx *= 0.94;
-      v.x += v.dx;
-      v.x = Math.max(8, Math.min(W - 8, v.x));
-      const downSpeed = v.speed + scrollY * 0.002;
-      v.y += downSpeed;
-      v.segments.push({ x: v.x, y: v.y });
-      if (v.segments.length > 120) v.segments.shift();
-      if (v.age < 30) v.alpha = (v.age / 30) * v.maxAlpha;
-      else if (v.age > v.maxAge - 40) v.alpha = Math.max(0, v.alpha - v.maxAlpha / 40);
-      v.branchCooldown--;
-      if (v.branchCooldown <= 0 && v.age < v.maxAge * 0.7 && veins.length < 22) {
-        const child = makeVein(v.x, 0, v.speed * (0.6 + Math.random() * 0.5), v.width * 0.65, v.hue);
-        child.y = v.y;
-        child.dx = v.dx + (Math.random() - 0.5) * 1.2;
-        child.maxAlpha = v.maxAlpha * 0.7;
-        veins.push(child);
-        v.branchCooldown = 90 + Math.random() * 120;
-      }
-      if (v.y > H + 40 || v.age > v.maxAge) v.alive = false;
-    });
-    veins = veins.filter(v => v.alive || v.segments.length > 0);
-  }
- 
-  function draw() {
-    ctx.clearRect(0, 0, W, H);
-    veins.forEach(v => {
-      if (v.segments.length < 2) return;
-      ctx.beginPath();
-      ctx.moveTo(v.segments[0].x, v.segments[0].y);
-      for (let i = 1; i < v.segments.length; i++) {
-        const prev = v.segments[i - 1];
-        const curr = v.segments[i];
-        const mx = (prev.x + curr.x) / 2;
-        const my = (prev.y + curr.y) / 2;
-        ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
-      }
-      const seg = v.segments;
-      const grad = ctx.createLinearGradient(seg[0].x, seg[0].y, seg[seg.length-1].x, seg[seg.length-1].y);
-      grad.addColorStop(0, `hsla(${v.hue}, 70%, 72%, 0)`);
-      grad.addColorStop(0.3, `hsla(${v.hue}, 70%, 72%, ${v.alpha * 0.5})`);
-      grad.addColorStop(0.85, `hsla(${v.hue}, 75%, 78%, ${v.alpha})`);
-      grad.addColorStop(1, `hsla(${v.hue}, 80%, 85%, ${v.alpha * 0.6})`);
-      ctx.strokeStyle = grad;
-      ctx.lineWidth = v.width;
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(seg[0].x, seg[0].y);
-      for (let i = 1; i < seg.length; i++) {
-        const prev = seg[i-1], curr = seg[i];
-        ctx.quadraticCurveTo(prev.x, prev.y, (prev.x+curr.x)/2, (prev.y+curr.y)/2);
-      }
-      ctx.strokeStyle = `hsla(${v.hue}, 85%, 85%, ${v.alpha * 0.25})`;
-      ctx.lineWidth = v.width * 3;
-      ctx.filter = 'blur(2px)';
-      ctx.stroke();
-      ctx.filter = 'none';
-    });
-  }
- 
-  function loop() {
-    update();
-    draw();
-    requestAnimationFrame(loop);
-  }
- 
-  window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
-  window.addEventListener('resize', resize);
-  resize();
-  init();
-  loop();
-})();
 </script>
  
 </body>
