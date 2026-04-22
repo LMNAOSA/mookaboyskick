@@ -421,13 +421,21 @@
   .funds-list li::before { content:'—'; color:var(--ochre); flex-shrink:0; }
  
   /* ── TIERS ── */
-  .tier-icon { width:72px; height:72px; margin-bottom:1.4rem; object-fit: contain; }
+  .tier-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 0;
+}
  
   .tiers-grid {
-    display:grid; grid-template-columns:repeat(4,1fr);
-    gap:0; margin-top:3rem; border:1px solid var(--dust);
-    position:relative;
-  }
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  margin-top: 3rem;
+  border: 1px solid var(--dust);
+  position: relative;
+}
  
   .tiers-grid::before {
     content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
@@ -437,19 +445,36 @@
     background-size:32px 32px;
   }
  
-  .tier {
-    padding:2.5rem 1.75rem; border-right:1px solid var(--dust);
-    transition:background 0.25s; position:relative; z-index:1;
-  }
+.tier {
+  padding: 2.5rem 1.75rem;
+  border-right: 1px solid var(--dust);
+  position: relative;
+  transition: background 0.25s ease;
+}
+
+.tier:hover {
+  background: rgba(196,124,43,0.05);
+}
  
-  .tier:last-child { border-right:none; }
+  ..tier:nth-child(3n) {
+  border-right: none;
+}
   .tier:hover { background:rgba(196,124,43,0.05); }
  
-  .tier.top {
-    background:#1c1409;
-    border:2px solid var(--ochre);
-    margin:-1px; z-index:3;
-  }
+ .tier.top {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 80px 1.5fr 1fr;
+  align-items: center;
+  gap: 2.5rem;
+
+  background: #1c1409;
+  border-top: 2px solid var(--ochre);
+  border-bottom: 2px solid var(--ochre);
+
+  margin: 0;
+  z-index: 2;
+}
  
   .tier-price {
     font-family:'Barlow Condensed', sans-serif;
@@ -514,35 +539,53 @@
   }
  
   @media (max-width:900px) {
-    .two-col { grid-template-columns:1fr; gap:3rem; }
-    .capsule-steps { grid-template-columns:1fr; }
-    .capsule-step { border-right:none; border-bottom:1px solid var(--dust); }
-    .capsule-step:last-child { border-bottom:none; }
-    .tiers-grid { grid-template-columns:1fr 1fr; }
-    .tier { border-bottom:1px solid var(--dust);
-  }
-    .tier {
-  border-bottom: 1px solid var(--dust);
-}
 
-.tier:nth-child(3),
-.tier:nth-child(4) {
-  border-bottom: none;
-}
-    .tier.top { margin:0; }
-    .hero-field-note-container { position: relative; bottom: 0; right: 0; margin-top: 2rem; padding: 0 6vw; }
+  .two-col {
+    grid-template-columns: 1fr;
+    gap: 3rem;
   }
- 
-  @media (max-width:1000px) {
+
+  .capsule-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .capsule-step {
+    border-right: none;
+    border-bottom: 1px solid var(--dust);
+  }
+
+  .capsule-step:last-child {
+    border-bottom: none;
+  }
+
+  /* ✅ TIERS FIXED */
   .tiers-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
+  }
+
+  .tier {
+    border-right: none;
+    border-bottom: 1px solid var(--dust);
+  }
+
+  .tier:last-child {
+    border-bottom: none;
+  }
+
+  .tier.top {
+    margin: 0;
+    grid-column: auto;
+    display: block; /* important: undo desktop grid layout */
+  }
+
+  .hero-field-note-container {
+    position: relative;
+    bottom: 0;
+    right: 0;
+    margin-top: 2rem;
+    padding: 0 6vw;
   }
 }
- 
-  @media (max-width:580px) {
-    .tiers-grid { grid-template-columns:1fr; }
-    .ritual-promise { flex-direction:column; gap:1rem; }
-  }
 </style>
 </head>
 <body>
