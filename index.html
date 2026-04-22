@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mooka Boys — Stake Your Claim</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Rye&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Barlow:wght@300;400;500&family=Barlow+Condensed:wght@400;600;700&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --dirt:   #12100a;
+    --stone:  #1e1810;
+    --deep:   #0a0805;
+    --dust:   #3a2c18;
+    --ochre:  #c47c2b;
+    --opal:   #6ae6e8;
+    --flash:  #f5d98b;
+    --cream:  #f0e8d5;
+    --pale:   #faf6ee;
+    --muted:  rgba(240,232,213,0.52);
+    --water:  rgba(90,150,210,0.55);
+  }
+ 
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+ 
+  body {
+    background: var(--dirt);
+    color: var(--cream);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 300;
+    line-height: 1.75;
+    overflow-x: hidden;
+  }
+ 
+  /* GRAIN OVERLAY */
+  body::after {
+    content:'';
+    position:fixed; inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.038'/%3E%3C/svg%3E");
+    pointer-events:none; z-index:9999;
+  }
+ 
+  /* ── PROSPECTOR GRID ── */
+  .grid-bg {
+    position:absolute; inset:0; pointer-events:none; overflow:hidden;
+    background-image:
+      linear-gradient(rgba(196,124,43,0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(196,124,43,0.055) 1px, transparent 1px);
+    background-size:72px 72px;
+  }
+ 
+  .grid-bg.faint {
+    background-image:
+      linear-gradient(rgba(196,124,43,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(196,124,43,0.03) 1px, transparent 1px);
+    background-size:72px 72px;
+  }
+ 
+  /* ── INLAND SEA CANVAS ── */
+  #seaCanvas {
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    pointer-events:none;
+    z-index:100;
+    opacity:0.72;
+  }
+ 
+  /* ── HERO ── */
+  .hero {
+    min-height:100vh;
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+  }
+ 
+  .hero-bg {
+    position:absolute; inset:0;
+    background-image: url('public/images/MOOKWIDE.png');
+    background-size:cover;
+    background-position: center 30%;
+    filter: brightness(0.55) contrast(1.05) saturate(0.85);
+  }
+ 
+  .hero-bg::after {
+    content:''; position:absolute; inset:0;
+    background:
+      linear-gradient(to top,  rgba(10,8,5,1) 0%,  rgba(10,8,5,0.7) 30%, rgba(10,8,5,0.2) 65%, transparent 100%),
+      linear-gradient(to right, rgba(10,8,5,0.5) 0%, transparent 60%);
+  }
+ 
+  .hero-grid {
+    position:absolute; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(196,124,43,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(196,124,43,0.07) 1px, transparent 1px);
+    background-size:88px 88px;
+    mask-image:linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, transparent 55%);
+  }
+ 
+  /* Compass */
+  .compass {
+    position:absolute; top:2.5rem; right:5vw;
+    width:68px; height:68px;
+    z-index:10; opacity:0;
+    animation:rise 1s ease forwards 1.2s;
+  }
+ 
+  .hero-content {
+    position:relative; z-index:10;
+    padding:0 6vw 5rem;
+    max-width:1080px;
+  }
+ 
+  .hero-coords {
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:1.2rem; letter-spacing:0.45em; text-transform:uppercase;
+    color:rgba(196,124,43,0.55);
+    margin-bottom:1.5rem;
+    opacity:0; animation:rise 0.7s ease forwards 0.2s;
+  }
+ 
+  .hero h1 {
+    font-family:'Cormorant Garamond', serif;
+    font-size:clamp(4rem, 10vw, 9.5rem);
+    font-weight:700;
+    line-height:0.92;
+    letter-spacing:-0.01em;
+    color:var(--pale);
+    text-shadow:0 2px 60px rgba(0,0,0,0.9);
+    max-width:800px;
+    opacity:0; animation:rise 0.9s ease forwards 0.35s;
+  }
+ 
+  .hero h1 em {
+    font-style:italic;
+    color:var(--opal);
+    display:block;
+  }
+ 
+  .hero-sub {
+    font-size:1.05rem; color:rgba(240,232,213,0.6);
+    max-width:480px; margin-top:1.75rem; line-height:1.8;
+    opacity:0; animation:rise 0.8s ease forwards 0.6s;
+  }
+ 
+  .ritual-promise {
+    display:flex; align-items:flex-start; gap:1.5rem;
+    border-top:1px solid rgba(196,124,43,0.28);
+    padding-top:2rem; margin-top:2.5rem; max-width:580px;
+    opacity:0; animation:rise 0.8s ease forwards 0.8s;
+  }
+ 
+  .ritual-icon { font-size:1.5rem; flex-shrink:0; }
+  .ritual-text { font-size:0.95rem; line-height:1.65; color:var(--cream); }
+  .ritual-text strong { color:var(--opal); font-weight:600; }
+ 
+  .hero-cta {
+    display:flex; align-items:center; gap:2.5rem; flex-wrap:wrap;
+    margin-top:2.5rem;
+    opacity:0; animation:rise 0.8s ease forwards 1s;
+  }
+ 
+  .btn-primary {
+    display:inline-block; background:var(--ochre);
+    color:var(--dirt);
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:0.9rem; font-weight:700;
+    letter-spacing:0.22em; text-transform:uppercase;
+    padding:0.9rem 2.2rem; text-decoration:none;
+    transition:background 0.2s, transform 0.15s;
+    cursor:pointer; border:none;
+  }
+ 
+  .btn-primary:hover { background:var(--flash); transform:translateY(-2px); }
+
+  /* TIER JOIN BUTTON SPECIFIC */
+  .btn-tier {
+    display: block;
+    text-align: center;
+    margin-top: 2rem;
+    width: 100%;
+  }
+ 
+  .goal-label {
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:1.2rem; letter-spacing:0.32em; text-transform:uppercase; color:var(--muted);
+  }
+ 
+  .goal-num {
+    font-family:'Cormorant Garamond', serif;
+    font-size:2rem; color:var(--opal); line-height:1; margin-top:0.2rem;
+  }
+ 
+  /* ── FIELD NOTES (REPOSITIONED TO HERO) ── */
+  .hero-field-note-container {
+    position: absolute;
+    bottom: 5rem;
+    right: 6vw;
+    z-index: 20;
+    opacity: 0;
+    animation: rise 1s ease forwards 1.5s;
+  }
+
+  /* ── LAYOUT ── */
+  .wrap { max-width:1080px; margin:0 auto; padding:6rem 6vw; position:relative; }
+ 
+  .full-bleed {
+    background:var(--stone);
+    border-top:1px solid var(--dust);
+    border-bottom:1px solid var(--dust);
+    position:relative; overflow:hidden;
+  }
+ 
+  .full-bleed-dark {
+    background:var(--deep);
+    border-top:1px solid var(--dust);
+    border-bottom:1px solid var(--dust);
+    position:relative; overflow:hidden;
+  }
+ 
+  .label {
+    display:block;
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:0.7rem; font-weight:600;
+    letter-spacing:0.45em; text-transform:uppercase;
+    color:var(--ochre); margin-bottom:1.75rem;
+  }
+ 
+  h2 {
+    font-family:'Playfair Display', serif;
+    font-size:clamp(2rem, 4vw, 3.2rem);
+    font-weight:700; line-height:1.1;
+    color:var(--pale); margin-bottom:2.5rem;
+    letter-spacing:-0.02em;
+  }
+ 
+  h2 em { font-style:italic; color:var(--opal); }
+ 
+  .prose p {
+    font-size:1.02rem; line-height:1.9;
+    color:var(--muted); max-width:580px; margin-bottom:1.35rem;
+  }
+ 
+  .prose p:last-child { margin-bottom:0; }
+ 
+  .two-col {
+    display:grid; grid-template-columns:3fr 2fr;
+    gap:6rem; align-items:start;
+  }
+ 
+  .pull {
+    font-family:'Cormorant Garamond', serif;
+    font-size:clamp(1.3rem, 2.2vw, 1.9rem);
+    font-style:italic; color:var(--opal); line-height:1.5;
+    border-left:3px solid var(--ochre); padding-left:2rem;
+  }
+ 
+  /* FIELD NOTES BOX STYLING */
+  .field-note {
+    border:1px solid rgba(196,124,43,0.25);
+    background:rgba(196,124,43,0.04);
+    padding:1.5rem 1.75rem; max-width:300px;
+    backdrop-filter: blur(4px);
+  }
+ 
+  .field-note::before {
+    content:'FIELD NOTES';
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:0.58rem; letter-spacing:0.4em; color:var(--ochre);
+    display:block; margin-bottom:0.7rem;
+  }
+ 
+  .field-note p {
+    font-family:'Caveat', cursive;
+    font-size:1.3rem; color:rgba(240,232,213,0.7);
+    line-height:1.6; margin:0; max-width:100%;
+  }
+ 
+  /* ── VOICE BLOCK ── */
+  .voice-block {
+    background:rgba(196,124,43,0.04);
+    border:1px solid var(--dust);
+    border-left:4px solid var(--ochre);
+    padding:3rem; max-width:680px; margin-top:3rem; position:relative;
+  }
+ 
+  .voice-block::before {
+    content:'"';
+    font-family:'Cormorant Garamond', serif;
+    font-size:7rem; color:var(--dust);
+    position:absolute; top:-1.2rem; left:2rem;
+    line-height:1; pointer-events:none;
+  }
+ 
+  .voice-block p,
+  .caveat-voice {
+    font-family:'Caveat', cursive !important;
+    font-size:1.35rem;
+    font-weight:400;
+    line-height:1.75;
+    color:rgba(240,232,213,0.9);
+    margin-bottom:1.2rem;
+    position:relative; z-index:1;
+    max-width:100%;
+  }
+ 
+  .voice-block p:last-child { margin-bottom:0; }
+ 
+  .voice-sig {
+    font-family:'Caveat', cursive;
+    font-size:1.8rem; font-weight:700;
+    color:var(--opal); margin-top:2rem;
+    display:block; position:relative; z-index:1;
+  }
+ 
+  .capsule-promise p {
+    font-family:'Caveat', cursive;
+    font-size:1.4rem; font-weight:500;
+    color:var(--opal); line-height:1.6; margin:0;
+  }
+ 
+  .tier-hook {
+    font-family:'Caveat', cursive;
+    font-size:1.05rem; font-weight:500; color:var(--muted);
+    padding-bottom:1.5rem; margin-bottom:1.5rem;
+    border-bottom:1px solid var(--dust); line-height:1.3;
+  }
+ 
+  .closing-sig {
+    font-family:'Caveat', cursive;
+    font-size:2.2rem; font-weight:700;
+    color:var(--opal); margin-top:2.5rem; display:block;
+    position:relative;
+  }
+ 
+  /* ── MAP SECTION ── */
+  .map-section {
+    position:relative; overflow:hidden;
+    background:var(--deep);
+    border-top:1px solid var(--dust);
+    border-bottom:1px solid var(--dust);
+  }
+ 
+  .map-bg {
+    position:absolute; inset:0;
+    background-image:url('Andamooka_map.png');
+    background-size:cover; background-position:center;
+    filter:brightness(0.15) saturate(0.4) sepia(0.6);
+  }
+ 
+  .map-bg::after {
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(to right, rgba(10,8,5,0.94) 0%, rgba(10,8,5,0.65) 50%, rgba(10,8,5,0.9) 100%);
+  }
+ 
+  .map-content {
+    position:relative; z-index:2;
+    padding:6rem 6vw; max-width:1080px; margin:0 auto;
+  }
+
+  .boys-portrait {
+    width: 100%;
+    max-width: 450px;
+    margin-bottom: 3rem;
+    border: 1px solid var(--dust);
+    padding: 10px;
+    background: var(--stone);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  }
+
+  .boys-portrait img {
+    width: 100%;
+    display: block;
+    filter: sepia(0.2) contrast(1.1);
+  }
+ 
+  /* ── CAPSULE ── */
+  .capsule-steps {
+    display:grid; grid-template-columns:repeat(3,1fr);
+    gap:0; margin-top:3.5rem; border:1px solid var(--dust);
+  }
+ 
+  .capsule-step {
+    padding:2.5rem 2rem; border-right:1px solid var(--dust);
+  }
+ 
+  .capsule-step:last-child { border-right:none; }
+ 
+  .step-num {
+    font-family:'Rye', serif;
+    font-size:3rem; color:var(--dust); line-height:1; margin-bottom:1rem;
+  }
+ 
+  .step-title {
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:1rem; font-weight:600;
+    letter-spacing:0.15em; text-transform:uppercase;
+    color:var(--opal); margin-bottom:0.75rem;
+  }
+ 
+  .step-body { font-size:1rem; line-height:1.7; color:var(--muted); }
+ 
+  .capsule-promise {
+    margin-top:3rem; padding:2.5rem 3rem;
+    border:1px solid rgba(196,124,43,0.4);
+    background:rgba(196,124,43,0.04); max-width:680px;
+  }
+ 
+  /* ── FUNDS ── */
+  .funds-list { list-style:none; margin-top:2rem; max-width:540px; }
+ 
+  .funds-list li {
+    display:flex; gap:1.5rem; padding:1.2rem 0;
+    border-bottom:1px solid var(--dust);
+    font-size:0.98rem; color:var(--muted); line-height:1.5;
+  }
+ 
+  .funds-list li::before { content:'—'; color:var(--ochre); flex-shrink:0; }
+ 
+  /* ── TIERS ── */
+  .tier-icon { width:52px; height:52px; margin-bottom:1.4rem; object-fit: contain; }
+ 
+  .tiers-grid {
+    display:grid; grid-template-columns:repeat(4,1fr);
+    gap:0; margin-top:3rem; border:1px solid var(--dust);
+    position:relative;
+  }
+ 
+  .tiers-grid::before {
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      linear-gradient(rgba(196,124,43,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(196,124,43,0.035) 1px, transparent 1px);
+    background-size:32px 32px;
+  }
+ 
+  .tier {
+    padding:2.5rem 1.75rem; border-right:1px solid var(--dust);
+    transition:background 0.25s; position:relative; z-index:1;
+  }
+ 
+  .tier:last-child { border-right:none; }
+  .tier:hover { background:rgba(196,124,43,0.05); }
+ 
+  .tier.top {
+    background:#1c1409;
+    border:2px solid var(--ochre);
+    margin:-1px; z-index:3;
+  }
+ 
+  .tier-price {
+    font-family:'Barlow Condensed', sans-serif;
+    font-size:1.2rem; font-weight:600;
+    letter-spacing:0.3em; text-transform:uppercase;
+    color:var(--ochre); margin-bottom:0.4rem;
+  }
+ 
+  .tier-name {
+    font-family:'Rye', serif;
+    font-size:1.65rem; color:var(--pale); line-height:1; margin-bottom:0.5rem;
+  }
+ 
+  .tier-perks { list-style:none; display:flex; flex-direction:column; gap:0.85rem; }
+ 
+  .tier-perks li {
+    font-size:0.96rem; color:rgba(240,232,213,0.7);
+    padding-left:1rem; position:relative; line-height:1.45;
+  }
+ 
+  .tier-perks li::before {
+    content:'·'; position:absolute; left:0;
+    color:var(--ochre); font-size:1.1rem; top:0.05rem; line-height:1;
+  }
+ 
+  .tier-perks li strong { color:var(--opal); font-weight:500; }
+ 
+  /* ── CLOSING ── */
+  .closing {
+    text-align:center; padding:9rem 6vw;
+    position:relative; overflow:hidden;
+  }
+ 
+  .closing::before {
+    content:''; position:absolute; inset:0;
+    background:radial-gradient(ellipse 55% 55% at 50% 50%, rgba(196,124,43,0.07) 0%, transparent 70%);
+  }
+ 
+  .closing h2 { max-width:620px; margin:0 auto 1.5rem; position:relative; }
+ 
+  .closing .prose p {
+    max-width:460px; margin:0 auto 1.2rem; text-align:center;
+  }
+ 
+  .closing .btn-primary { margin-top:3rem; position:relative; }
+ 
+  /* ── FOOTER ── */
+  footer {
+    border-top:1px solid var(--dust); padding:2rem 6vw;
+    display:flex; justify-content:space-between;
+    align-items:center; flex-wrap:wrap; gap:1rem;
+  }
+ 
+  footer span {
+    font-size:0.75rem; color:rgba(240,232,213,0.2);
+    font-family:'Barlow Condensed', sans-serif; letter-spacing:0.1em;
+  }
+ 
+  @keyframes rise {
+    from { opacity:0; transform:translateY(18px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+ 
+  @media (max-width:900px) {
+    .two-col { grid-template-columns:1fr; gap:3rem; }
+    .capsule-steps { grid-template-columns:1fr; }
+    .capsule-step { border-right:none; border-bottom:1px solid var(--dust); }
+    .capsule-step:last-child { border-bottom:none; }
+    .tiers-grid { grid-template-columns:1fr 1fr; }
+    .tier { border-bottom:1px solid var(--dust); }
+    .tier.top { margin:0; }
+    .hero-field-note-container { position: relative; bottom: 0; right: 0; margin-top: 2rem; padding: 0 6vw; }
+  }
+ 
+  @media (max-width:580px) {
+    .tiers-grid { grid-template-columns:1fr; }
+    .ritual-promise { flex-direction:column; gap:1rem; }
+  }
+</style>
+</head>
+<body>
+ 
+<!-- ── INLAND SEA CANVAS ── -->
+<canvas id="seaCanvas"></canvas>
+ 
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+ 
+  <!-- Compass rose -->
+  <svg class="compass" viewBox="0 0 68 68" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="34" cy="34" r="32" stroke="#c47c2b" stroke-width="0.7" opacity="0.45"/>
+    <circle cx="34" cy="34" r="25" stroke="#c47c2b" stroke-width="0.4" opacity="0.25"/>
+    <path d="M34 4 L37 30 L34 34 L31 30 Z" fill="#e8b96a" opacity="0.85"/>
+    <path d="M34 64 L31 38 L34 34 L37 38 Z" fill="#c47c2b" opacity="0.45"/>
+    <path d="M4 34 L30 31 L34 34 L30 37 Z" fill="#c47c2b" opacity="0.45"/>
+    <path d="M64 34 L38 37 L34 34 L38 31 Z" fill="#c47c2b" opacity="0.45"/>
+    <circle cx="34" cy="34" r="3" fill="#e8b96a" opacity="0.8"/>
+    <text x="31" y="19" font-family="Barlow Condensed" font-size="7" fill="#e8b96a" opacity="0.75" letter-spacing="0.5">N</text>
+    <text x="31" y="55" font-family="Barlow Condensed" font-size="6" fill="#c47c2b" opacity="0.45">S</text>
+    <text x="8"  y="37" font-family="Barlow Condensed" font-size="6" fill="#c47c2b" opacity="0.45">W</text>
+    <text x="56" y="37" font-family="Barlow Condensed" font-size="6" fill="#c47c2b" opacity="0.45">E</text>
+  </svg el>
+ 
+  <div class="hero-content">
+    <p class="hero-coords">30°26′S &nbsp;137°09′E &nbsp;·&nbsp; Andamooka, South Australia &nbsp;·&nbsp; Est. 1920s</p>
+ 
+    <h1>Dig Deep<br>With The<br><em>Mooka Boys</em></h1>
+ 
+    <p class="hero-sub">We sacrifice the luxuries of life to pull the very thing that defines luxury out of the ground. Help us keep digging — and come underground with us.</p>
+ 
+    <div class="ritual-promise">
+      <div class="ritual-icon">📄</div>
+      <div class="ritual-text">
+        <strong>Everyone who backs this goes underground with us.</strong><br>
+        Your name and where you're from — written down and taken into the mine while we dig. You'll be there. That's a promise.
+      </div>
+    </div>
+ 
+    <div class="hero-cta">
+      <a href="#tiers" class="btn-primary">Stake Your Claim</a>
+      <div>
+        <div class="goal-label">Campaign Goal</div>
+        <div class="goal-num">$25,000 AUD</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FIELD NOTES REPOSITIONED TO HERO BOTTOM RIGHT -->
+  <div class="hero-field-note-container">
+    <div class="field-note">
+      <p>Watch for colour after rain. Good opal follows the old water. It always has.</p>
+    </div>
+  </div>
+</section>
+ 
+ 
+<!-- ═══ THE STORY ═══ -->
+<section style="position:relative; overflow:hidden; background:var(--dirt);">
+  <div class="grid-bg faint"></div>
+  <div class="wrap">
+    <span class="label">The Story</span>
+    <div class="two-col">
+      <div>
+        <h2>We mine <em>luxury.</em><br>We don't live it.</h2>
+        <div class="prose">
+          <p>Opal is one of the most beautiful things that comes out of the ground anywhere in the world. And then it leaves. It goes into someone else's ring, someone else's collection, someone else's life.</p>
+          <p>That's the job. We go in, we find it, and it goes. We wouldn't have it any other way — but it's worth saying out loud, because most people never think about the hands it passed through to get there.</p>
+          <p>Opal mining in Andamooka and Mooka hasn't changed much in decades. Small crews. Hard ground. You read the dirt, you follow what the earth gives you, and some days it gives you nothing. You dig anyway.</p>
+          <p>Once a stone leaves the claim, where it came from is forgotten. It becomes part of the trade. That's always been the deal.</p>
+          <p>We want to change that — slowly, carefully, from the inside.</p>
+        </div>
+      </div>
+      <div>
+        <blockquote class="pull">"We pull some of the most beautiful stones in the world out of the ground. Then they go to someone else. That's the job."</blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+ 
+<!-- ═══ THE BOYS — map bg ═══ -->
+<div class="map-section">
+  <div class="map-bg"></div>
+  <div class="grid-bg" style="opacity:0.7; position:absolute; inset:0; z-index:1;"></div>
+  <div class="map-content">
+    <span class="label">Who We Are</span>
+    
+    <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 2rem;">
+      <div class="boys-portrait">
+        <img src="public/images/Matt_Cozza_Kathagen.png" alt="The Mooka Boys">
+      </div>
+
+      <div>
+        <h2>Matt &amp; Cozza <em>Kathagen</em></h2>
+        <div class="prose">
+          <p>Brothers. Miners. We've been at this our whole lives. You might know us from Outback Opal Hunters, but out here in outback South Australia that's not what we're known for. We're known for showing up — to the claim, to the community, to the work.</p>
+          <p>This isn't a phase. It's our life. There's no glamour at the bottom of a shaft. No comfort in the dirt. Just the two of us, our gear, and whatever the ground decides to give us that day.</p>
+        </div>
+      </div>
+    </div>
+ 
+    <!-- BOYS SPEAK — Caveat throughout -->
+    <div class="voice-block">
+      <p>We've given up a lot to keep doing this. Comfort, certainty, the kind of life most people take for granted.</p>
+      <p>We know what it is to go without. We'd choose it again tomorrow.</p>
+      <p>We go into the ground to keep our family above it.</p>
+      <p>What we need right now is people who want to be part of it. Not spectators. Crew.</p>
+      <span class="voice-sig">— Matt &amp; Cozza</span>
+    </div>
+  </div>
+</div>
+ 
+ 
+<!-- ═══ THE RITUAL ═══ -->
+<div class="full-bleed-dark">
+  <div class="grid-bg"></div>
+  <div class="wrap">
+    <span class="label">The Ritual</span>
+    <h2>You're coming<br><em>underground with us.</em></h2>
+    <div class="prose">
+      <p>Every single person who backs this campaign goes underground with us. Your name and where you're from — written on paper and taken into the mine while we dig. You'll be there when we work the claim. That's not a figure of speech. That's what we're going to do.</p>
+      <p>And if we hit our goal, we keep going.</p>
+    </div>
+ 
+    <div class="capsule-steps">
+      <div class="capsule-step">
+        <div class="step-num">01</div>
+        <div class="step-title">You Back Us</div>
+        <div class="step-body">Your name and where you're from gets written down. Simple as that. You're on the list.</div>
+      </div>
+      <div class="capsule-step">
+        <div class="step-num">02</div>
+        <div class="step-title">You Go Underground</div>
+        <div class="step-body">We take that paper into the mine with us. Underground, at Andamooka – and you'll see it live.</div>
+      </div>
+      <div class="capsule-step">
+        <div class="step-num">03</div>
+        <div class="step-title">When We Hit the Goal</div>
+        <div class="step-body">Every name goes into a time capsule. We seal it. We bury it in the mine. Permanently. Your name is in the ground at Andamooka — forever.</div>
+      </div>
+    </div>
+ 
+    <!-- BOYS SPEAK — Caveat -->
+    <div class="capsule-promise">
+      <p>Every name that helped keep the dig alive — sealed underground, in the same earth we've worked our whole lives. That's not a perk. That's a covenant.</p>
+    </div>
+  </div>
+</div>
+ 
+ 
+<!-- ═══ WHERE THE MONEY GOES ═══ -->
+<section style="position:relative; overflow:hidden; background:var(--dirt);">
+  <div class="grid-bg faint"></div>
+  <div class="wrap">
+    <span class="label">Where the Money Goes</span>
+    <div class="two-col">
+      <div>
+        <h2>Straight into <em>the dig.</em></h2>
+ 
+        <!-- BOYS SPEAK — Caveat -->
+        <p class="caveat-voice" style="margin-bottom:1.5rem; max-width:580px;">We're not going to dress this up. The gear is worn out. Some of it's done. And when the gear stops, we stop — it's that simple.</p>
+ 
+        <div class="prose">
+          <p>We're raising $25,000 AUD to replace and maintain the equipment that keeps us in the ground. Every dollar goes straight into the claim. No events. No overhead.</p>
+        </div>
+        <ul class="funds-list">
+          <li>Replacement and upgrade of digging and extraction equipment</li>
+          <li>Safety and operational capability on site</li>
+          <li>Continued documentation of active work</li>
+        </ul>
+        <!-- BOYS SPEAK — Caveat -->
+        <p class="caveat-voice" style="margin-top:1.5rem; font-size:1.35rem; color:rgba(240,232,213,0.45);">Not expansion. Just keeping the dig alive.</p>
+      </div>
+      <div>
+        <blockquote class="pull">"When the gear stops, we stop. It's that simple."</blockquote>
+      </div>
+    </div>
+  </div>
+</section>
+ 
+ 
+<!-- ═══ DIG WALL ═══ -->
+<div class="full-bleed">
+  <div class="grid-bg"></div>
+  <div class="wrap">
+    <span class="label">For Those Who Go Deeper</span>
+    <h2>The <em>Dig Wall</em></h2>
+    <div class="prose">
+      <p>Beyond the paper ritual, every donor's name goes on a permanent physical wall inside the mine — carved into the earth at Andamooka. Not a digital badge. Not a certificate. Your name, on the wall, underground, where we work every day.</p>
+      <p>Every time we film down there, it's in the background. As our crew grows, the wall grows. A permanent record of everyone who helped us keep going.</p>
+    </div>
+    <!-- BOYS SPEAK — Caveat -->
+    <p class="caveat-voice" style="margin-top:2rem; max-width:560px; font-size:1.35rem; color:rgba(240,232,213,0.8);">We'll film a dedicated video — torch in hand, underground — panning across every name. Because if you're on it, you deserve to see it.</p>
+  </div>
+</div>
+ 
+ 
+<!-- ═══ TIERS ═══ -->
+<section style="background:var(--stone); border-top:1px solid var(--dust); border-bottom:1px solid var(--dust);" id="tiers">
+  <div class="wrap">
+    <span class="label">Support Levels</span>
+    <h2>Pick your place<br><em>on the crew.</em></h2>
+    <p style="font-size:0.98rem; color:var(--muted); max-width:500px; margin-bottom:0;">No tote bags. Just your place in something real — and a piece of the ground to prove it.</p>
+ 
+    <div class="tiers-grid">
+ 
+      <!-- SPOTTER -->
+      <div class="tier">
+        <img class="tier-icon" src="public/images/Icon1.png" alt="Spotter Icon">
+        <div class="tier-price">$50 AUD</div>
+        <div class="tier-name">Spotter</div>
+        <div class="tier-hook">You're on the field with us</div>
+        <ul class="tier-perks">
+          <li>Your name and location <strong>taken underground</strong> during the dig</li>
+          <li>If we hit the goal — <strong>your name in the time capsule</strong>, buried forever</li>
+          <li><strong>Your name on the Dig Wall</strong> inside the mine</li>
+          <li>Photo of your name on the wall, sent to you</li>
+          <li>Access to the private field diary</li>
+          <li>Early access to all Mooka Boys content</li>
+        </ul>
+        <a href="#tiers" class="btn-primary btn-tier">JOIN</a>
+      </div>
+ 
+      <!-- SHIFTER -->
+      <div class="tier">
+          <img class="tier-icon" src="public/images/icon2.png" alt="Shifter Icon">
+        <div class="tier-price">$250 AUD</div>
+        <div class="tier-name">Shifter</div>
+        <div class="tier-hook">Working it alongside us</div>
+        <ul class="tier-perks">
+          <li>Everything in Spotter</li>
+          <li><strong>A raw piece of Andamooka matrix opal</strong> — rough, uncut, from our claim</li>
+          <li>Exclusive livestream of an actual dig</li>
+          <li>Digital dig journal — unfiltered, as it happens</li>
+        </ul>
+        <a href="#tiers" class="btn-primary btn-tier">JOIN</a>
+      </div>
+ 
+      <!-- MINER -->
+      <div class="tier top">
+        <img class="tier-icon" src="public/images/icon3.png" alt="Miner Icon">
+        <div class="tier-price">$500 AUD &nbsp;·&nbsp; Most Popular</div>
+        <div class="tier-name">Miner</div>
+        <div class="tier-hook">Dirt on your boots</div>
+        <ul class="tier-perks">
+          <li>Everything in Shifter</li>
+          <li><strong>An untreated Andamooka Matrix Opal</strong> — hand-selected by us</li>
+          <li>Your name on a physical marker <strong>on the claim</strong></li>
+          <li>Personal video message from Matt and Cozza</li>
+        </ul>
+        <a href="#tiers" class="btn-primary btn-tier">JOIN</a>
+      </div>
+ 
+      <!-- CREW -->
+      <div class="tier">
+        <img class="tier-icon" src="public/images/icon-4.png" alt="Crew Icon">
+        <div class="tier-price">$1,000+ AUD</div>
+        <div class="tier-name">Crew</div>
+        <div class="tier-hook">You're one of us. Full stop.</div>
+        <ul class="tier-perks">
+          <li>Everything in Miner</li>
+          <li><strong>A private call with Matt and Cozza</strong></li>
+          <li>First option to purchase significant finds <strong>before public sale</strong></li>
+          <li><strong>An invitation to visit the claim in person</strong></li>
+          <li>A high saturation piece of Andamooka Matrix Opal</li>
+        </ul>
+        <a href="#tiers" class="btn-primary btn-tier">JOIN</a>
+      </div>
+ 
+    </div>
+  </div>
+</section>
+ 
+ 
+<!-- ═══ CLOSING ═══ -->
+<div class="closing">
+  <div class="grid-bg faint" style="opacity:0.4;"></div>
+  <span class="label" style="position:relative;">Before You Go</span>
+  <h2>We don't live like<br>the stones <em>we find.</em></h2>
+  <div class="prose">
+    <p>We never have. We go without so the dig keeps going. We pull beauty out of the ground and it goes to someone else — and we go back down the next day.</p>
+    <p>Just enough to keep the gear running and the claim active. Everything else — the wall, the capsule, the ritual — that's us saying thank you the only way we know how.</p>
+  </div>
+  <!-- BOYS SPEAK — Caveat -->
+  <p class="caveat-voice" style="max-width:460px; margin:1.5rem auto 0; text-align:center; font-size:1.35rem; color:rgba(240,232,213,0.7);">With dirt on our hands and your name underground.</p>
+  <span class="closing-sig">Welcome to our claim. &nbsp;— Matt &amp; Cozza</span>
+  <br>
+  <a href="#tiers" class="btn-primary" style="position:relative;">Stake Your Claim</a>
+</div>
+ 
+ 
+<!-- ═══ FOOTER ═══ -->
+<footer>
+  <span>© 2025 Mooka Boys &nbsp;·&nbsp; Andamooka, South Australia</span>
+  <span>30°26′S &nbsp;137°09′E</span>
+</footer>
+ 
+ 
+<!-- ═══ INLAND SEA — scroll-driven water veins ═══ -->
+<script>
+(function() {
+  const canvas = document.getElementById('seaCanvas');
+  const ctx = canvas.getContext('2d');
+ 
+  let W, H, scrollY = 0, pageH = 1;
+  let veins = [];
+  let tick = 0;
+ 
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+    pageH = Math.max(document.body.scrollHeight, 1);
+  }
+ 
+  function makeVein(x, startProgress, speed, width, hue) {
+    return {
+      x,
+      y: -20,
+      cx: x,
+      dx: (Math.random() - 0.5) * 0.8,
+      speed,
+      width,
+      alpha: 0,
+      maxAlpha: 0.18 + Math.random() * 0.22,
+      hue,
+      alive: true,
+      age: 0,
+      maxAge: 180 + Math.random() * 220,
+      segments: [],
+      branches: [],
+      branchCooldown: 60 + Math.random() * 80,
+      born: performance.now(),
+    };
+  }
+ 
+  function spawnVein() {
+    const x = W * (0.05 + Math.random() * 0.9);
+    veins.push(makeVein(x, 0, 1.2 + Math.random() * 2.2, 0.8 + Math.random() * 1.6, 210 + Math.random() * 20));
+  }
+ 
+  function init() {
+    veins = [];
+    for (let i = 0; i < 7; i++) spawnVein();
+  }
+ 
+  function update() {
+    tick++;
+    if (tick % 90 === 0 && veins.length < 18) spawnVein();
+ 
+    veins.forEach(v => {
+      if (!v.alive) return;
+      v.age++;
+      v.dx += (Math.random() - 0.5) * 0.18;
+      v.dx *= 0.94;
+      v.x += v.dx;
+      v.x = Math.max(8, Math.min(W - 8, v.x));
+      const downSpeed = v.speed + scrollY * 0.002;
+      v.y += downSpeed;
+      v.segments.push({ x: v.x, y: v.y });
+      if (v.segments.length > 120) v.segments.shift();
+      if (v.age < 30) v.alpha = (v.age / 30) * v.maxAlpha;
+      else if (v.age > v.maxAge - 40) v.alpha = Math.max(0, v.alpha - v.maxAlpha / 40);
+      v.branchCooldown--;
+      if (v.branchCooldown <= 0 && v.age < v.maxAge * 0.7 && veins.length < 22) {
+        const child = makeVein(v.x, 0, v.speed * (0.6 + Math.random() * 0.5), v.width * 0.65, v.hue);
+        child.y = v.y;
+        child.dx = v.dx + (Math.random() - 0.5) * 1.2;
+        child.maxAlpha = v.maxAlpha * 0.7;
+        veins.push(child);
+        v.branchCooldown = 90 + Math.random() * 120;
+      }
+      if (v.y > H + 40 || v.age > v.maxAge) v.alive = false;
+    });
+    veins = veins.filter(v => v.alive || v.segments.length > 0);
+  }
+ 
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    veins.forEach(v => {
+      if (v.segments.length < 2) return;
+      ctx.beginPath();
+      ctx.moveTo(v.segments[0].x, v.segments[0].y);
+      for (let i = 1; i < v.segments.length; i++) {
+        const prev = v.segments[i - 1];
+        const curr = v.segments[i];
+        const mx = (prev.x + curr.x) / 2;
+        const my = (prev.y + curr.y) / 2;
+        ctx.quadraticCurveTo(prev.x, prev.y, mx, my);
+      }
+      const seg = v.segments;
+      const grad = ctx.createLinearGradient(seg[0].x, seg[0].y, seg[seg.length-1].x, seg[seg.length-1].y);
+      grad.addColorStop(0, `hsla(${v.hue}, 70%, 72%, 0)`);
+      grad.addColorStop(0.3, `hsla(${v.hue}, 70%, 72%, ${v.alpha * 0.5})`);
+      grad.addColorStop(0.85, `hsla(${v.hue}, 75%, 78%, ${v.alpha})`);
+      grad.addColorStop(1, `hsla(${v.hue}, 80%, 85%, ${v.alpha * 0.6})`);
+      ctx.strokeStyle = grad;
+      ctx.lineWidth = v.width;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(seg[0].x, seg[0].y);
+      for (let i = 1; i < seg.length; i++) {
+        const prev = seg[i-1], curr = seg[i];
+        ctx.quadraticCurveTo(prev.x, prev.y, (prev.x+curr.x)/2, (prev.y+curr.y)/2);
+      }
+      ctx.strokeStyle = `hsla(${v.hue}, 85%, 85%, ${v.alpha * 0.25})`;
+      ctx.lineWidth = v.width * 3;
+      ctx.filter = 'blur(2px)';
+      ctx.stroke();
+      ctx.filter = 'none';
+    });
+  }
+ 
+  function loop() {
+    update();
+    draw();
+    requestAnimationFrame(loop);
+  }
+ 
+  window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive: true });
+  window.addEventListener('resize', resize);
+  resize();
+  init();
+  loop();
+})();
+</script>
+ 
+</body>
+</html>
